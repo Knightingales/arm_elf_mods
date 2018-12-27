@@ -1,6 +1,6 @@
 include proj.mk
 
-CFLAGS=-fstack-protector-all -fPIE -fno-exceptions -g -fvisibility=hidden -std=c99 -O3
+CFLAGS=-fstack-protector-all -fPIE -pie -fno-exceptions -g -fvisibility=hidden -std=c99 -O3
 WFLAGS=-Wall -Wextra -pedantic -Wcast-qual -Werror
 LFLAGS=-pie -Wl,-z,relro,-z,now
 OFLAGS=-pipe

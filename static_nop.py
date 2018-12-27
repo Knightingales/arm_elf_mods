@@ -5,9 +5,7 @@ from elftools.elf.elffile import ELFFile
 from capstone import *
 from capstone.arm import *
 
-# get_section = lambda elf, section: filter(lambda x: x is not None, [x if x.name == section else None for x in elf.iter_sections()])[0]
-
-def push_bin(elf, bin, offset):
+def push_bin1(elf, binstr, offset):
 	# Now, get all the code sections (usually starts with .init and ands in .fini)
 	init = elf.get_section_by_name(".init")
 	code_start_off = init.header.sh_offset
@@ -31,11 +29,27 @@ def push_bin(elf, bin, offset):
 	off_from_init = text.header.sh_offset - init.header.sh_offset + offset
 
 	# Inject the code
-	code = code[:off_from_init] + "\x00\x00" + code[off_from_init:]
+	code = code[:off_from_init] + binstr + code[off_from_init:]
 	
 	new_elf = fix_elf(elf, [(off_from_init, 2)], code)
 
 	return new_elf
+
+def push_bin(elf, binstr, offset):
+	# Get text information
+	text = elf.get_section_by_name(".text")
+
+	# Initialize read
+	elf.stream.seek(0)
+
+	# Get the entire code
+	code = elf.stream.read()
+
+	# Reset
+	elf.stream.seek(0)
+
+	# Inject binary
+	return code[:text.header.sh_offset + offset] + binstr + code[text.header.sh_offset + offset:]
 	
 if len(argv) != 1+ 2:
 	print "%s <ARM ELF> <Offset>" % argv[0]
